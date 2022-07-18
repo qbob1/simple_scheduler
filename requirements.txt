@@ -1,0 +1,2 @@
+pycron==3.0.0
+sqlite_utils==3.27
