@@ -52,7 +52,8 @@ class schedule_ctx(sched.scheduler):
         self.db.register_function(self.schedule_job)
     
         self.last_update_seen = self.db.execute('SELECT max(rowid) FROM job_audit_log').fetchone()[0]
-        
+        if self.last_update_seen is None:
+            self.last_update_seen = 0
         for row in self.db['job'].rows:
             self.init_execution_ctx(row)
             
@@ -79,8 +80,10 @@ class schedule_ctx(sched.scheduler):
             del self.jobs[job_id]
 
     def log_and_schedule_job(self, logs = {}):
-        for job_id, log in logs.items():
-            self.db['job_log'].insert_all(log)
+        for job_id, logs in logs.items():
+            for l in logs:
+                l['job_id'] = job_id 
+            self.db['job_log'].insert_all(logs)
             self.schedule_job(job_id)
         return True
 
